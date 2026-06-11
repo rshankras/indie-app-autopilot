@@ -1,0 +1,22 @@
+<!-- Appended to the app repo's CLAUDE.md by setup-app.sh. Fill in every {{...}}. -->
+
+## Build & Test (read by pipeline agents — keep exact and current)
+
+```bash
+# Build
+xcodebuild build -scheme {{SCHEME}} -destination 'platform=iOS Simulator,name={{SIM_DEVICE}}'
+
+# Full test suite (the pass/fail contract for issue-worker)
+xcodebuild test -scheme {{SCHEME}} -destination 'platform=iOS Simulator,name={{SIM_DEVICE}}'
+```
+
+- Scheme: `{{SCHEME}}` · Simulator: `{{SIM_DEVICE}}` · Min deployment target: `{{MIN_IOS}}`
+- Test frameworks: {{SWIFT_TESTING_OR_XCTEST}}
+- Conventions agents must follow: {{ARCHITECTURE_NOTES — e.g. "SwiftUI + @Observable, no new dependencies without an issue saying so"}}
+
+## Agent pipeline
+
+This repo is on the [indie-app-autopilot](https://github.com/rshankras/indie-app-autopilot) pipeline.
+Issue labels drive the queue (`agent-ready` → `agent-in-progress` → PR). Agents obey the
+[safety contract](https://github.com/rshankras/indie-app-autopilot/blob/main/docs/SAFETY.md):
+never merge, never push to main, tests green before any PR.

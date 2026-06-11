@@ -1,0 +1,30 @@
+# Fastfile — beta lane: build and upload to TestFlight (internal group).
+# Credentials come from env (CI secrets); see docs/SETUP.md Step 4.
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to TestFlight (internal testers)"
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_CONTENT"),
+      is_key_content_base64: true
+    )
+
+    build_number = latest_testflight_build_number(api_key: api_key) + 1
+    increment_build_number(build_number: build_number)
+    File.write("fastlane/.last_build_number", build_number.to_s)
+
+    build_app(
+      scheme: ENV.fetch("APP_SCHEME"),
+      export_method: "app-store"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

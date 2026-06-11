@@ -1,0 +1,13 @@
+{
+  "name": "indie-app-autopilot",
+  "description": "Agents that take an indie iOS app from GitHub issue to App Store: issue-worker, release-agent, feedback-triage, queue-runner, beta-break-bot. Two human gates: PR merge and App Store submit.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Ravi Shankar",
+    "email": "ravi@rshankar.com",
+    "url": "https://rshankar.com"
+  },
+  "homepage": "https://github.com/rshankras/indie-app-autopilot",
+  "license": "MIT",
+  "keywords": ["ios", "apple", "testflight", "app-store", "fastlane", "agents", "indie"]
+}

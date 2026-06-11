@@ -1,0 +1,44 @@
+name: Agent task
+description: A task scoped for the issue-worker agent. No acceptance criteria, no agent-ready label.
+title: "[Task] "
+labels: ["needs-human"]
+body:
+  - type: input
+    id: goal
+    attributes:
+      label: Goal
+      description: One sentence. What should be true when this is done?
+      placeholder: Users can export their history as CSV from Settings.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checkboxes. Each one becomes a test — write them as verifiable statements.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: What the agent must NOT touch, even if tempting.
+      placeholder: Don't redesign the Settings screen; CSV format only, no PDF.
+  - type: dropdown
+    id: ui_involved
+    attributes:
+      label: UI involved?
+      description: If yes, the agent must attach before/after simulator screenshots to the PR.
+      options:
+        - "yes"
+        - "no"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context (optional)
+      description: Relevant files, prior issues, design links, crash reports.

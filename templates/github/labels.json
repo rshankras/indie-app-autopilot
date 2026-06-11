@@ -1,0 +1,8 @@
+[
+  { "name": "agent-ready", "color": "0E8A16", "description": "Spec complete — agent may pick this up" },
+  { "name": "agent-in-progress", "color": "FBCA04", "description": "An agent run currently owns this issue" },
+  { "name": "agent-blocked", "color": "D93F0B", "description": "Agent hit a question only a human can answer" },
+  { "name": "needs-human", "color": "5319E7", "description": "Too ambiguous or risky for an agent — human review first" },
+  { "name": "triage", "color": "C5DEF5", "description": "Filed by feedback-triage — awaiting human promotion" },
+  { "name": "agent-pr", "color": "1D76DB", "description": "PR opened by issue-worker — counts toward WIP limit" }
+]

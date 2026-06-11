@@ -1,0 +1,49 @@
+# Merge to main → TestFlight (internal group).
+# Deterministic CI on purpose: no AI in this step. See docs/PIPELINE.md Phase 2.
+#
+# Requires (set via gh secret set / gh variable set):
+#   secrets: ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT (base64 .p8)
+#   vars:    APP_SCHEME
+#
+# Runner: self-hosted Mac recommended (free, signing works). For GitHub-hosted,
+# change runs-on to macos-15 and add signing setup (fastlane match).
+
+name: TestFlight
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  beta:
+    runs-on: self-hosted
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install fastlane (if needed)
+        run: which fastlane || brew install fastlane
+
+      - name: Build and upload to TestFlight
+        env:
+          APP_SCHEME: ${{ vars.APP_SCHEME }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+        run: fastlane beta
+
+      - name: Report build number on the commit
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BUILD=$(cat fastlane/.last_build_number 2>/dev/null || echo "see TestFlight")
+          gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/comments" \
+            -f body="🛫 Uploaded to TestFlight (internal) — build $BUILD"

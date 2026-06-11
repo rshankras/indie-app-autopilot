@@ -1,0 +1,6 @@
+# Appfile — fill in per app. Do not commit secrets; only identifiers belong here.
+
+app_identifier("{{BUNDLE_ID}}")        # e.g. com.example.MyApp
+apple_id("{{APPLE_ID_EMAIL}}")         # your Apple ID email
+team_id("{{TEAM_ID}}")                 # Developer Portal team ID
+itc_team_id("{{ITC_TEAM_ID}}")         # App Store Connect team ID (often same)
