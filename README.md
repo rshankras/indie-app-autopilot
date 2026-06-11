@@ -18,6 +18,16 @@ GitHub issue (spec) ──► issue-worker ──► PR ──► [HUMAN: merge]
                                           phased release + crash watch
 ```
 
+## Why this exists
+
+Born June 2026, during WWDC26 week, from three observations:
+
+1. **Solo developers don't scale; queues + agents do.** With a portfolio of apps, anything you do per-app you effectively don't do. Defining all work as GitHub issues and letting an agent work them one at a time — tests first, screenshots attached, human merging — turns "I should update that app" into a queue that drains itself.
+2. **The autonomy boundary is the design problem, not the AI.** A pipeline you can trust is one with exactly two human gates (PR merge, App Store submit), a WIP limit of 1, and agents that ask instead of guess. This repo is mostly an encoding of that boundary — see [docs/SAFETY.md](docs/SAFETY.md).
+3. **Agent skills became an open standard.** Xcode 27 ships Apple's own Agent Skills in the same `SKILL.md` format used here and in claude-code-apple-skills. Operating procedures for agents are now portable, shareable artifacts — so a pipeline like this can be open source instead of every indie rebuilding it privately.
+
+The build philosophy is deliberately incremental ([docs/PIPELINE.md](docs/PIPELINE.md)): issue→PR first, live with it two weeks, then TestFlight CI, then the release agent, then the orchestrator. Each phase is useful even if you stop there. **Don't build the orchestrator first.**
+
 ## What this is (and isn't)
 
 This is the **action layer**: agent operating procedures, CI wiring, and per-app templates for running an issue-driven development pipeline with [Claude Code](https://claude.com/claude-code).
@@ -59,6 +69,7 @@ cp -r indie-app-autopilot/agents/* ~/.claude/skills/
 | [docs/PIPELINE.md](docs/PIPELINE.md) | The full Phase 0–4 build plan and rollout order |
 | [docs/SETUP.md](docs/SETUP.md) | Onboarding one app, step by step (signing, CI runner, secrets) |
 | [docs/SAFETY.md](docs/SAFETY.md) | The operating contract: two human gates, WIP limit, hard rules |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Where this is heading: portfolio-operations agents (health monitor, review concierge, ASO experimenter, overnight QA) |
 
 ## Repository structure
 
