@@ -14,7 +14,7 @@ Status: the shipping loop is being piloted against a real 16-app portfolio durin
 
 > **review-concierge deferred (June 2026):** at current portfolio volume (a handful of written reviews per year), a daily review agent would be a no-op almost every run. `portfolio-health-monitor` carries a weekly new/unanswered-reviews check instead; review-concierge graduates to its own agent when an app starts drawing reviews weekly.
 
-Already shipped from the original brainstorm: `beta-break-bot` (rebuild the portfolio on every Xcode beta drop and report breakage) and `portfolio-health-monitor` (weekly week-over-week vitals digest) — both in `agents/` now.
+Already shipped from the original brainstorm: `beta-break-bot` (rebuild the portfolio on every Xcode beta drop and report breakage), `portfolio-health-monitor` (weekly week-over-week vitals digest), and `daily-sales-pulse` (yesterday's sales as an evening notification — the deterministic fetch/compare/notify loop is `scripts/daily-sales-pulse.py` on launchd; the SKILL.md is its interactive twin for follow-up questions). Note the API ceiling that shaped it: the official App Store Connect API has **no intraday data** — ASC's Trends UI uses private endpoints — so "yesterday by evening" is the freshest any legitimate automation can deliver.
 
 ## Design rules for new agents
 
