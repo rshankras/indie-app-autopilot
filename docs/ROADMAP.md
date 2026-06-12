@@ -1,19 +1,18 @@
 # Roadmap
 
-Where this is heading: from a single-app pipeline to a portfolio autopilot. The current five agents cover the **shipping loop** (issue → PR → TestFlight → release). The next wave covers **portfolio operations** — the recurring per-app work that quietly stops happening once you maintain more than a few apps.
+Where this is heading: from a single-app pipeline to a portfolio autopilot. The original five agents cover the **shipping loop** (issue → PR → TestFlight → release). The next wave covers **portfolio operations** — the recurring per-app work that quietly stops happening once you maintain more than a few apps.
 
-Status: the shipping loop is being piloted against a real 16-app portfolio during the iOS 27 beta cycle (summer 2026). Portfolio agents land after the pilot proves the safety model.
+Status: the shipping loop is being piloted against a real 16-app portfolio during the iOS 27 beta cycle (summer 2026). The first portfolio agent, `portfolio-health-monitor`, has shipped (read-only, so it doesn't wait on the pilot); the state-changing ones land after the pilot proves the safety model.
 
 ## Planned agents
 
 | Agent | Trigger | What it does | Human gate |
 |---|---|---|---|
-| `portfolio-health-monitor` | weekly | Pulls sales, analytics, perf metrics, and crash diagnostics for every app; compares to baseline; writes one digest with anomalies on top ("downloads −40% WoW", "crash spike after 2.3.1") | read-only |
 | `review-concierge` | daily | Fetches new App Store reviews across all apps, drafts responses, files crash complaints as `triage` issues | you approve each reply before it posts |
 | `aso-experimenter` | monthly | Checks keyword performance, proposes metadata changes, runs them as Product Page Optimization experiments, reads results, iterates | you approve each experiment |
 | `overnight-qa` | nightly | Build, full test suite, launch in simulator, screenshot key flows, snapshot + accessibility checks; morning report | read-only |
 
-Already shipped from the original brainstorm: `beta-break-bot` (in `agents/` now — rebuild the portfolio on every Xcode beta drop and report breakage).
+Already shipped from the original brainstorm: `beta-break-bot` (rebuild the portfolio on every Xcode beta drop and report breakage) and `portfolio-health-monitor` (weekly week-over-week vitals digest) — both in `agents/` now.
 
 ## Design rules for new agents
 

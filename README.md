@@ -43,6 +43,7 @@ It is not a knowledge library. Platform knowledge (SwiftUI patterns, HIG review,
 | [`feedback-triage`](agents/feedback-triage/SKILL.md) | daily schedule | TestFlight crashes + feedback → deduplicated GitHub issues (`triage`) | You promote to `agent-ready` |
 | [`queue-runner`](agents/queue-runner/SKILL.md) | nightly schedule | Runs issue-worker when no agent PR is open (WIP = 1); weekly digest | — |
 | [`beta-break-bot`](agents/beta-break-bot/SKILL.md) | new Xcode beta drops | Rebuilds every portfolio app against the new SDK, reports breakage | — |
+| [`portfolio-health-monitor`](agents/portfolio-health-monitor/SKILL.md) | weekly schedule | Sales, downloads, sessions, crashes, perf, star-rating deltas for every app on the account → one week-over-week digest, anomalies on top | — (read-only) |
 
 Agents use the open Agent Skills format (`SKILL.md` + YAML frontmatter) — the same format used by claude-code-apple-skills and Xcode 27's built-in Agent Skills.
 
@@ -69,7 +70,7 @@ cp -r indie-app-autopilot/agents/* ~/.claude/skills/
 | [docs/PIPELINE.md](docs/PIPELINE.md) | The full Phase 0–4 build plan and rollout order |
 | [docs/SETUP.md](docs/SETUP.md) | Onboarding one app, step by step (signing, CI runner, secrets) |
 | [docs/SAFETY.md](docs/SAFETY.md) | The operating contract: two human gates, WIP limit, hard rules |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Where this is heading: portfolio-operations agents (health monitor, review concierge, ASO experimenter, overnight QA) |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Where this is heading: portfolio-operations agents (review concierge, ASO experimenter, overnight QA) |
 
 ## Repository structure
 
