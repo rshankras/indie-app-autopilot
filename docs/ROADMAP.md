@@ -12,6 +12,8 @@ Status: the shipping loop is being piloted against a real 16-app portfolio durin
 | `aso-experimenter` | monthly | Checks keyword performance, proposes metadata changes, runs them as Product Page Optimization experiments, reads results, iterates | you approve each experiment |
 | `overnight-qa` | nightly | Build, full test suite, launch in simulator, screenshot key flows, snapshot + accessibility checks; morning report | read-only |
 
+> **review-concierge deferred (June 2026):** at current portfolio volume (a handful of written reviews per year), a daily review agent would be a no-op almost every run. `portfolio-health-monitor` carries a weekly new/unanswered-reviews check instead; review-concierge graduates to its own agent when an app starts drawing reviews weekly.
+
 Already shipped from the original brainstorm: `beta-break-bot` (rebuild the portfolio on every Xcode beta drop and report breakage) and `portfolio-health-monitor` (weekly week-over-week vitals digest) — both in `agents/` now.
 
 ## Design rules for new agents

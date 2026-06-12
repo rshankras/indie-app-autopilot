@@ -43,7 +43,7 @@ It is not a knowledge library. Platform knowledge (SwiftUI patterns, HIG review,
 | [`feedback-triage`](agents/feedback-triage/SKILL.md) | daily schedule | TestFlight crashes + feedback → deduplicated GitHub issues (`triage`) | You promote to `agent-ready` |
 | [`queue-runner`](agents/queue-runner/SKILL.md) | nightly schedule | Runs issue-worker when no agent PR is open (WIP = 1); weekly digest | — |
 | [`beta-break-bot`](agents/beta-break-bot/SKILL.md) | new Xcode beta drops | Rebuilds every portfolio app against the new SDK, reports breakage | — |
-| [`portfolio-health-monitor`](agents/portfolio-health-monitor/SKILL.md) | weekly schedule | Sales, downloads, sessions, crashes, perf, star-rating deltas for every app on the account → one week-over-week digest, anomalies on top | — (read-only) |
+| [`portfolio-health-monitor`](agents/portfolio-health-monitor/SKILL.md) | weekly schedule | Sales, downloads, sessions, crashes, perf, rating deltas, new/unanswered reviews for every app on the account → one week-over-week digest, anomalies on top | — (read-only) |
 
 Agents use the open Agent Skills format (`SKILL.md` + YAML frontmatter) — the same format used by claude-code-apple-skills and Xcode 27's built-in Agent Skills.
 
