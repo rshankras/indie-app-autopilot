@@ -2,6 +2,10 @@
 
 Agents that take an indie iOS app from **GitHub issue → tested PR → TestFlight → App Store**, with a human in exactly two places: merging the PR and pressing Submit.
 
+[![Claude Code](https://img.shields.io/badge/Claude_Code-skills-blueviolet)](https://claude.ai/code)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Agent Skills](https://img.shields.io/badge/Xcode_27-Agent_Skills-blue)](https://developer.apple.com)
+
 ```
 GitHub issue (spec) ──► issue-worker ──► PR ──► [HUMAN: merge]
                                                     │
@@ -18,6 +22,18 @@ GitHub issue (spec) ──► issue-worker ──► PR ──► [HUMAN: merge]
                                           phased release + crash watch
 ```
 
+## The stack
+
+Three repos, three layers — use one or all:
+
+| Layer | Repo | What it is |
+|---|---|---|
+| Knowledge | [claude-code-apple-skills](https://github.com/rshankras/claude-code-apple-skills) | 139 skills — how to build right |
+| Action | **indie-app-autopilot** ← you are here | 7 agents — who ships it |
+| Integration | [asc-metadata-mcp](https://github.com/rshankras/asc-metadata-mcp) | 65+ MCP tools — live ASC API wire |
+
+`release-agent` and `portfolio-health-monitor` use `asc-metadata-mcp` to read and write App Store Connect directly. Install it alongside this repo for the full pipeline.
+
 ## Why this exists
 
 Born June 2026, during WWDC26 week, from three observations:
@@ -32,21 +48,21 @@ The build philosophy is deliberately incremental ([docs/PIPELINE.md](docs/PIPELI
 
 This is the **action layer**: agent operating procedures, CI wiring, and per-app templates for running an issue-driven development pipeline with [Claude Code](https://claude.com/claude-code).
 
-It is not a knowledge library. Platform knowledge (SwiftUI patterns, HIG review, App Store optimization, code generators) lives in the companion repo: **[claude-code-apple-skills](https://github.com/rshankras/claude-code-apple-skills)** — the knowledge layer (*how to build it right*). This repo is the action layer (*agents that ship it*). They are cross-linked, never merged.
+It is not a knowledge library. Platform knowledge (SwiftUI patterns, HIG review, App Store optimization, code generators) lives in **[claude-code-apple-skills](https://github.com/rshankras/claude-code-apple-skills)** — the knowledge layer. App Store Connect reads and writes go through **[asc-metadata-mcp](https://github.com/rshankras/asc-metadata-mcp)** — the integration layer. This repo is the action layer. They are cross-linked, never merged.
 
 ## The agents
 
-| Agent | Trigger | What it does | Human gate |
-|---|---|---|---|
-| [`issue-worker`](agents/issue-worker/SKILL.md) | manual or queue-runner | Oldest `agent-ready` issue → TDD implementation → simulator screenshots → PR | You merge |
-| [`release-agent`](agents/release-agent/SKILL.md) | you say "prepare release X.Y" | Release notes, App Store Connect metadata, submission checklist | You submit |
-| [`feedback-triage`](agents/feedback-triage/SKILL.md) | daily schedule | TestFlight crashes + feedback → deduplicated GitHub issues (`triage`) | You promote to `agent-ready` |
-| [`queue-runner`](agents/queue-runner/SKILL.md) | nightly schedule | Runs issue-worker when no agent PR is open (WIP = 1); weekly digest | — |
-| [`beta-break-bot`](agents/beta-break-bot/SKILL.md) | new Xcode beta drops | Rebuilds every portfolio app against the new SDK, reports breakage | — |
-| [`portfolio-health-monitor`](agents/portfolio-health-monitor/SKILL.md) | weekly schedule | Sales, downloads, sessions, crashes, perf, rating deltas, new/unanswered reviews for every app on the account → one week-over-week digest, anomalies on top | — (read-only) |
-| [`daily-sales-pulse`](agents/daily-sales-pulse/SKILL.md) | daily (launchd runs [`scripts/daily-sales-pulse.py`](scripts/daily-sales-pulse.py)) | Yesterday's downloads/proceeds per app vs trailing 7-day average → one macOS notification; replaces checking Trends by hand. The deterministic daily run is a script; the agent skill is its interactive twin | — (read-only) |
+| Agent | Trigger | What it does | Uses asc-metadata-mcp | Human gate |
+|---|---|---|---|---|
+| [`issue-worker`](agents/issue-worker/SKILL.md) | manual or queue-runner | Oldest `agent-ready` issue → TDD implementation → simulator screenshots → PR | — | You merge |
+| [`release-agent`](agents/release-agent/SKILL.md) | you say "prepare release X.Y" | Release notes, App Store Connect metadata, submission checklist | Yes | You submit |
+| [`feedback-triage`](agents/feedback-triage/SKILL.md) | daily schedule | TestFlight crashes + feedback → deduplicated GitHub issues (`triage`) | — | You promote to `agent-ready` |
+| [`queue-runner`](agents/queue-runner/SKILL.md) | nightly schedule | Runs issue-worker when no agent PR is open (WIP = 1); weekly digest | — | — |
+| [`beta-break-bot`](agents/beta-break-bot/SKILL.md) | new Xcode beta drops | Rebuilds every portfolio app against the new SDK, reports breakage | — | — |
+| [`portfolio-health-monitor`](agents/portfolio-health-monitor/SKILL.md) | weekly schedule | Sales, downloads, sessions, crashes, perf, rating deltas, new/unanswered reviews → week-over-week digest, anomalies on top | Yes | — (read-only) |
+| [`daily-sales-pulse`](agents/daily-sales-pulse/SKILL.md) | daily (launchd runs [`scripts/daily-sales-pulse.py`](scripts/daily-sales-pulse.py)) | Yesterday's downloads/proceeds per app vs trailing 7-day average → one macOS notification | Yes | — (read-only) |
 
-Agents use the open Agent Skills format (`SKILL.md` + YAML frontmatter) — the same format used by claude-code-apple-skills and Xcode 27's built-in Agent Skills.
+Agents use the open Agent Skills format (`SKILL.md` + YAML frontmatter) — the same format as Xcode 27's built-in Agent Skills.
 
 ## Quick start
 
@@ -57,10 +73,13 @@ git clone https://github.com/rshankras/indie-app-autopilot.git
 # 2. Install the agents globally (or per-project into .claude/skills/)
 cp -r indie-app-autopilot/agents/* ~/.claude/skills/
 
-# 3. Onboard one app (labels, issue template, TestFlight workflow, Fastlane)
+# 3. (Optional but recommended) Install asc-metadata-mcp for App Store Connect access
+#    https://github.com/rshankras/asc-metadata-mcp
+
+# 4. Onboard one app (labels, issue template, TestFlight workflow, Fastlane)
 ./scripts/setup-app.sh /path/to/your-app-repo YourScheme
 
-# 4. Read docs/SETUP.md for the one-time signing/CI setup, then:
+# 5. Read docs/SETUP.md for the one-time signing/CI setup, then:
 #    file issues → label one `agent-ready` → ask Claude Code to "work the next issue"
 ```
 
@@ -78,7 +97,7 @@ cp -r indie-app-autopilot/agents/* ~/.claude/skills/
 ```
 agents/        Agent operating procedures (SKILL.md format) — read by Claude
 templates/     Files COPIED into each app repo by scripts/setup-app.sh
-scripts/       setup-app.sh — bootstrap an app repo (labels, templates)
+scripts/       setup-app.sh — bootstrap an app repo (labels, templates, Fastlane)
 docs/          Pipeline plan, setup guide, safety contract
 ```
 
