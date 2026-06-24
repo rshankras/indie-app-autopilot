@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Daily sales pulse: fetch yesterday's App Store daily sales report via the
 asc-metadata MCP server, append to local history, compare to the trailing
-7-day average, and post a macOS notification.
+7-day average, post a macOS notification, and (opt-in) email the pulse.
 
 Deterministic companion to agents/daily-sales-pulse/SKILL.md — this script is
 the unattended daily run (launchd/cron); the agent skill is for interactive
@@ -12,9 +12,12 @@ own config).
 
 import json
 import os
+import smtplib
 import subprocess
 import sys
+import traceback
 from datetime import date, datetime, timedelta
+from email.message import EmailMessage
 
 STATE_DIR = os.path.join(
     os.environ.get("AUTOPILOT_DATA_DIR", os.path.expanduser("~/.indie-app-autopilot")),
@@ -24,6 +27,16 @@ HISTORY_PATH = os.path.join(STATE_DIR, "history.json")
 LATEST_PATH = os.path.join(STATE_DIR, "latest.md")
 HISTORY_KEEP_DAYS = 90
 TRAILING_DAYS = 7
+
+# Email delivery is opt-in: set PULSE_EMAIL_TO (e.g. in the launchd plist) to turn it
+# on, so this public script carries no personal address. The SMTP app password is read
+# from the macOS Keychain, never from the repo:
+#   security add-generic-password -s indie-app-autopilot-smtp -a <user> -T /usr/bin/security -w
+EMAIL_TO = os.environ.get("PULSE_EMAIL_TO")
+SMTP_USER = os.environ.get("PULSE_SMTP_USER", EMAIL_TO or "")
+SMTP_HOST = os.environ.get("PULSE_SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("PULSE_SMTP_PORT", "587"))
+KEYCHAIN_SERVICE = os.environ.get("PULSE_KEYCHAIN_SERVICE", "indie-app-autopilot-smtp")
 
 
 def mcp_binary():
@@ -158,7 +171,41 @@ def notify(title, message):
                    check=False)
 
 
-def main():
+def smtp_password():
+    """App password from the macOS login Keychain (never stored in this repo)."""
+    try:
+        out = subprocess.run(
+            ["security", "find-generic-password",
+             "-s", KEYCHAIN_SERVICE, "-a", SMTP_USER, "-w"],
+            capture_output=True, text=True, check=True)
+        return out.stdout.strip()
+    except subprocess.CalledProcessError:
+        return None
+
+
+def send_email(subject, body):
+    """Email the pulse. No-op (returns False) unless PULSE_EMAIL_TO is set, so the
+    public script carries no personal address — local config lives in the plist."""
+    if not EMAIL_TO:
+        return False
+    password = smtp_password()
+    if not password:
+        notify("Sales Pulse — email skipped",
+               f"No SMTP password in Keychain ({KEYCHAIN_SERVICE})")
+        return False
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = SMTP_USER
+    msg["To"] = EMAIL_TO
+    msg.set_content(body)
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as s:
+        s.starttls()
+        s.login(SMTP_USER, password)
+        s.send_message(msg)
+    return True
+
+
+def run():
     binary = mcp_binary()
     history = load_history()
 
@@ -175,7 +222,9 @@ def main():
             break
         print(f"{candidate}: not published yet")
     if report is None:
-        notify("Sales Pulse", "No new daily report available yet (Apple delay)")
+        msg = "No new daily report available yet (Apple delay)"
+        notify("Sales Pulse", msg)
+        send_email("Sales Pulse — no report yet", msg + "\n")
         return
 
     entry = to_day_entry(report)
@@ -189,7 +238,33 @@ def main():
         f.write(body)
     print(body)
     notify(f"Sales Pulse — {pretty}", headline)
+    send_email(f"Sales Pulse — {pretty}", body)
+
+
+def main():
+    """Wrap the run so an offline night or API error alerts instead of dying silently
+    (the original failure mode: a traceback in pulse.err.log that nobody ever sees)."""
+    try:
+        run()
+    except Exception as e:
+        traceback.print_exc()  # keep full detail in pulse.err.log for debugging
+        msg = f"pulse unavailable today: {e}"
+        notify("Sales Pulse — unavailable", msg)
+        try:
+            send_email("Sales Pulse — unavailable", msg + "\n")
+        except Exception:
+            pass  # already alerted via notification; don't mask the original error
 
 
 if __name__ == "__main__":
-    main()
+    if "--test-email" in sys.argv:
+        print(f"EMAIL_TO={EMAIL_TO or '(unset)'}  SMTP_USER={SMTP_USER or '(unset)'}  "
+              f"host={SMTP_HOST}:{SMTP_PORT}")
+        print("keychain password:", "found" if smtp_password() else "MISSING")
+        ok = send_email(
+            "Sales Pulse — TEST",
+            "Test email from daily-sales-pulse.py.\n\n"
+            "If this landed in your inbox, SMTP + Keychain are wired correctly.\n")
+        print("sent" if ok else "NOT sent (see config above)")
+    else:
+        main()

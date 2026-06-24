@@ -60,7 +60,7 @@ It is not a knowledge library. Platform knowledge (SwiftUI patterns, HIG review,
 | [`queue-runner`](agents/queue-runner/SKILL.md) | nightly schedule | Runs issue-worker when no agent PR is open (WIP = 1); weekly digest | — | — |
 | [`beta-break-bot`](agents/beta-break-bot/SKILL.md) | new Xcode beta drops | Rebuilds every portfolio app against the new SDK, reports breakage | — | — |
 | [`portfolio-health-monitor`](agents/portfolio-health-monitor/SKILL.md) | weekly schedule | Sales, downloads, sessions, crashes, perf, rating deltas, new/unanswered reviews → week-over-week digest, anomalies on top | Yes | — (read-only) |
-| [`daily-sales-pulse`](agents/daily-sales-pulse/SKILL.md) | daily (launchd runs [`scripts/daily-sales-pulse.py`](scripts/daily-sales-pulse.py)) | Yesterday's downloads/proceeds per app vs trailing 7-day average → one macOS notification | Yes | — (read-only) |
+| [`daily-sales-pulse`](agents/daily-sales-pulse/SKILL.md) | daily (launchd runs [`scripts/daily-sales-pulse.py`](scripts/daily-sales-pulse.py)) | Yesterday's downloads/proceeds per app vs trailing 7-day average → a macOS notification + email | Yes | — (read-only) |
 
 Agents use the open Agent Skills format (`SKILL.md` + YAML frontmatter) — the same format as Xcode 27's built-in Agent Skills.
 
